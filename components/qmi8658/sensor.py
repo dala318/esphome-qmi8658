@@ -13,18 +13,11 @@ from esphome.const import (
     CONF_TEMPERATURE,
     CONF_ID,
     UNIT_METER_PER_SECOND_SQUARED,
-    # CONF_OVERSAMPLING,
-    # CONF_RANGE,
     DEVICE_CLASS_TEMPERATURE,
-    # ICON_MAGNET,
     ICON_SCREEN_ROTATION,
     ICON_BRIEFCASE_DOWNLOAD,
     STATE_CLASS_MEASUREMENT,
-    # UNIT_MICROTESLA,
     UNIT_CELSIUS,
-    # UNIT_DEGREES,
-    # ICON_SCREEN_ROTATION,
-    # CONF_UPDATE_INTERVAL,
 )
 
 DEPENDENCIES = ["i2c"]
@@ -113,8 +106,8 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TEMPERATURE): temperature_schema,
         }
     )
-    .extend(cv.polling_component_schema("60s"))
-    .extend(i2c.i2c_device_schema(0x0D))
+    .extend(cv.polling_component_schema("5s"))
+    .extend(i2c.i2c_device_schema(0x6B))
 )
 
 

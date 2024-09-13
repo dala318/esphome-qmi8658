@@ -7,8 +7,9 @@
 #include "SensorQMI8658.hpp"                    
 #include <cmath>
 
-// #define I2C_SDA       11
-// #define I2C_SCL       12
+// TODO: How to get this from i2c bus instead of hard-coded?
+#define I2C_SDA       11
+#define I2C_SCL       12
 
 namespace esphome {
 namespace qmi8658 {
@@ -16,16 +17,16 @@ namespace qmi8658 {
 static const char *TAG = "qmi8658";
 
 void QMI8658Component::setup() {
-    qmi8658 = SensorQMI8658();
+    // uint8_t sda_pin = this->bus_->sda_pin_;
+    // uint8_t scl_pin = this->bus_->scl_pin_;
+    // ESP_LOGI(TAG, "SDA: %u   SCL: %u", sda_pin, scl_pin);
+ 
+    // qmi8658 = SensorQMI8658();
 
     // Wire.begin(I2C_SDA, I2C_SCL);
-    //Using WIRE !!
-    // if (!qmi8658.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
-    if (!qmi8658.begin(QMI8658_L_SLAVE_ADDRESS)) {
+    // if (!qmi8658.begin(QMI8658_L_SLAVE_ADDRESS)) {
+    if (!qmi8658.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
         ESP_LOGE(TAG, "Failed to find QMI8658 - check your wiring!");
-        while (1) {
-            delay(1000);
-        }
     }
     ESP_LOGI(TAG, "Device ID: %x",qmi8658.getChipID());
     
@@ -50,19 +51,19 @@ void QMI8658Component::setup() {
 }
 
 void QMI8658Component::dump_config() {
-  ESP_LOGCONFIG(TAG, "QMI8658:");
-  LOG_I2C_DEVICE(this);
-  if (this->is_failed()) {
-    ESP_LOGE(TAG, "Communication with QMI8658 failed!");
-  }
-  LOG_UPDATE_INTERVAL(this);
-  LOG_SENSOR("  ", "Acceleration X", this->accel_x_sensor_);
-  LOG_SENSOR("  ", "Acceleration Y", this->accel_y_sensor_);
-  LOG_SENSOR("  ", "Acceleration Z", this->accel_z_sensor_);
-  LOG_SENSOR("  ", "Gyro X", this->gyro_x_sensor_);
-  LOG_SENSOR("  ", "Gyro Y", this->gyro_y_sensor_);
-  LOG_SENSOR("  ", "Gyro Z", this->gyro_z_sensor_);
-  LOG_SENSOR("  ", "Temperature", this->temperature_sensor_);
+    ESP_LOGCONFIG(TAG, "QMI8658:");
+    LOG_I2C_DEVICE(this);
+    if (this->is_failed()) {
+        ESP_LOGE(TAG, "Communication with QMI8658 failed!");
+    }
+    LOG_UPDATE_INTERVAL(this);
+    LOG_SENSOR("  ", "Acceleration X", this->accel_x_sensor_);
+    LOG_SENSOR("  ", "Acceleration Y", this->accel_y_sensor_);
+    LOG_SENSOR("  ", "Acceleration Z", this->accel_z_sensor_);
+    LOG_SENSOR("  ", "Gyro X", this->gyro_x_sensor_);
+    LOG_SENSOR("  ", "Gyro Y", this->gyro_y_sensor_);
+    LOG_SENSOR("  ", "Gyro Z", this->gyro_z_sensor_);
+    LOG_SENSOR("  ", "Temperature", this->temperature_sensor_);
 }
 
 void QMI8658Component::update() {
@@ -95,8 +96,6 @@ void QMI8658Component::update() {
             if (this->gyro_z_sensor_ != nullptr)
                 this->gyro_z_sensor_->publish_state(gyro_data.z);
         }
-
-        // ESP_LOGD(TAG, ">      %lu   %.2f ℃", qmi8658.getTimestamp(), qmi8658.getTemperature_C());
     }
     else{
         ESP_LOGE(TAG, "Data not ready");

@@ -40,75 +40,58 @@ esphome:
     - "SPI"
     - "SensorLib"
 ########## EXTERNAL LIB #######################
-  includes:
-    - my_dev_components/qmi8658.h
+#   includes:
+#     - my_dev_components/qmi8658.h
 
-sensor:
-  - platform: custom
-    lambda: |-
-      auto qmi8658 = new QMI8658();
-      App.register_component(qmi8658);
-      return {qmi8658->temperature_sensor, qmi8658->accel_x_sensor};
-    # return {qmi8658->temperature_sensor, sht20->humidity_sensor, sht20->vpd_sensor, sht20->dew_point_sensor};
-    sensors:
-      - name: "Temperature"
-        id: sensor_temperature
-        unit_of_measurement: °C
-        accuracy_decimals: 2
-      - name: "Accel X"
-        id: sensor_accel_x
-        unit_of_measurement: m/s²
-        accuracy_decimals: 4
+# sensor:
+#   - platform: custom
+#     lambda: |-
+#       auto qmi8658 = new QMI8658();
+#       App.register_component(qmi8658);
+#       return {qmi8658->temperature_sensor, qmi8658->accel_x_sensor};
+#     sensors:
+#       - name: "Temperature"
+#         id: sensor_temperature
+#         unit_of_measurement: °C
+#         accuracy_decimals: 2
+#       - name: "Accel X"
+#         id: sensor_accel_x
+#         unit_of_measurement: m/s²
+#         accuracy_decimals: 4
 
 ########## EXTERNAL COMPONENT #######################
-# external_components:
-# - source:
-#       type: local
-#       path: my_dev_components
+external_components:
+- source:
+      type: local
+      path: my_dev_components
 
-# i2c:
-#   sda: GPIO11
-#   scl: GPIO12
+i2c:
+  sda: GPIO11
+  scl: GPIO12
 
-# sensor:
-#   - platform: qmi8658
-#     address: 0x6B
-#     acceleration_x:
-#       name: "QMI8658 Acceleration X"
-#     acceleration_y:
-#       name: "QMI8658 Acceleration Y"
-#     acceleration_z:
-#       name: "QMI8658 Acceleration Z"
-#     temperature:
-#       name: "QMI8658 Temperature"
-#       filters:
-#         - offset: 34.0
-#     # range: 200uT
-#     # oversampling: 512x
-#     update_interval: 1s
+sensor:
+  - platform: qmi8658
+    address: 0x6B
+    acceleration_x:
+      name: "QMI8658 Acceleration X"
+    acceleration_y:
+      name: "QMI8658 Acceleration Y"
+    acceleration_z:
+      name: "QMI8658 Acceleration Z"
+    gyroscope_x:
+      name: "QMI8658 Gyro X"
+    gyroscope_y:
+      name: "QMI8658 Gyro Y"
+    gyroscope_z:
+      name: "QMI8658 Gyro Z"
+    temperature:
+      name: "QMI8658 Temperature"
+      filters:
+        - offset: 34.0
+    # range: 200uT
+    # oversampling: 512x
+    update_interval: 1s
 
-
-########## MPU6050 TEMPLATE #######################
-# i2c:
-#   sda: GPIO11
-#   scl: GPIO12
-# sensor:
-#   - platform: mpu6050
-#     address: 0x68
-#     accel_x:
-#       name: "MPU6050 Accel X"
-#     accel_y:
-#       name: "MPU6050 Accel Y"
-#     accel_z:
-#       name: "MPU6050 Accel z"
-#     gyro_x:
-#       name: "MPU6050 Gyro X"
-#     gyro_y:
-#       name: "MPU6050 Gyro Y"
-#     gyro_z:
-#       name: "MPU6050 Gyro z"
-#     temperature:
-#       name: "MPU6050 Temperature"
 
 ########## TEXT #######################
 text_sensor:
@@ -139,7 +122,20 @@ font:
     glyphs: '♡Ωäöüß!"%()+,-_.:*=°?~#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
 
 light:
-  - platform: neopixelbus
+########## ESP_IDF LED STRIP #######################
+  # - platform: esp32_rmt_led_strip
+  #   name: "RMT Light"
+  #   id: pixel_matrix
+  #   rgb_order: RGB
+  #   pin: GPIO14
+  #   num_leds: 64
+  #   rmt_channel: 0
+  #   chipset: ws2812
+  #   color_correct: [40%, 40%, 40%]
+  #   effects: 
+  #     - addressable_scan:
+  #     - addressable_twinkle:  - platform: neopixelbus
+########## ARDUINO LED STRIP #######################
     name: "NeoPixel Light"
     id: pixel_matrix
     type: RGB
@@ -164,25 +160,25 @@ display:
     rotation: 180°
     update_interval: 1000ms
     auto_clear_enabled: true
-    lambda: |-
-          static uint16_t xpos = 0;
-          const char * text = id(pixel_select).state.c_str();
-          int x_start, y_start;
-          int width, height;
-          it.get_text_bounds(0, 0, text, id(tinyfont),TextAlign::TOP_LEFT, &x_start, &y_start, &width, &height); 
-          it.print(-(xpos % (width + $xscrollpadding)), -2, id(tinyfont), Color(0xFF1010), TextAlign::TOP_LEFT, text);           
-          if (width > it.get_width()) // only scroll if nesessary
-            xpos++;
-          else
-            xpos = 0;
-    ########## BULLS-EYE #######################
+    ########## TEXT STRING, NOT WORKING #######################
     # lambda: |-
-    #       // Draw a bulls-eye pattern
-    #       Color red = Color(0x5F0000);
-    #       Color green = Color(0x005F00);
-    #       Color blue = Color(0x00005F);
-    #       it.rectangle(0, 0, 8, 8, red);
-    #       it.rectangle(1, 1, 6, 6, green);
-    #       it.rectangle(2, 2, 4, 4, blue);
-    #       it.rectangle(3, 3, 2, 2, red);
+    #       static uint16_t xpos = 0;
+    #       const char * text = id(pixel_select).state.c_str();
+    #       int x_start, y_start;
+    #       int width, height;
+    #       it.get_text_bounds(0, 0, text, id(tinyfont),TextAlign::TOP_LEFT, &x_start, &y_start, &width, &height); 
+    #       it.print(-(xpos % (width + $xscrollpadding)), -2, id(tinyfont), Color(0xFF1010), TextAlign::TOP_LEFT, text);           
+    #       if (width > it.get_width()) // only scroll if nesessary
+    #         xpos++;
+    #       else
+    #         xpos = 0;
+    ########## BULLS-EYE #######################
+    lambda: |-
+          Color red = Color(0x5F0000);
+          Color green = Color(0x005F00);
+          Color blue = Color(0x00005F);
+          it.rectangle(0, 0, 8, 8, red);
+          it.rectangle(1, 1, 6, 6, green);
+          it.rectangle(2, 2, 4, 4, blue);
+          it.rectangle(3, 3, 2, 2, red);
 
