@@ -18,6 +18,7 @@ esphome:
 external_components:
 - source:
       source: github://dala318/esphome-qmi8658
+
 i2c:
   sda: GPIO11
   scl: GPIO12
