@@ -15,7 +15,6 @@ esphome:
     - "SPI"
     - "SensorLib"
 
-
 external_components:
 - source:
       source: github://dala318/esphome-qmi8658
