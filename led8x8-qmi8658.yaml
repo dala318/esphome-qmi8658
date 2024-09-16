@@ -39,27 +39,7 @@ esphome:
     - "Wire"
     - "SPI"
     - "SensorLib"
-########## EXTERNAL LIB #######################
-#   includes:
-#     - my_dev_components/qmi8658.h
 
-# sensor:
-#   - platform: custom
-#     lambda: |-
-#       auto qmi8658 = new QMI8658();
-#       App.register_component(qmi8658);
-#       return {qmi8658->temperature_sensor, qmi8658->accel_x_sensor};
-#     sensors:
-#       - name: "Temperature"
-#         id: sensor_temperature
-#         unit_of_measurement: °C
-#         accuracy_decimals: 2
-#       - name: "Accel X"
-#         id: sensor_accel_x
-#         unit_of_measurement: m/s²
-#         accuracy_decimals: 4
-
-########## EXTERNAL COMPONENT #######################
 external_components:
 - source:
       type: local
@@ -92,12 +72,9 @@ sensor:
       name: "QMI8658 Temperature"
       filters:
         - offset: 34.0
-    # range: 200uT
-    # oversampling: 512x
     update_interval: 5s
 
 
-########## TEXT #######################
 text_sensor:
   - platform: template
     name: "Text"
@@ -126,20 +103,6 @@ font:
     glyphs: '♡Ωäöüß!"%()+,-_.:*=°?~#0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'
 
 light:
-########## ESP_IDF LED STRIP #######################
-  # - platform: esp32_rmt_led_strip
-  #   name: "RMT Light"
-  #   id: pixel_matrix
-  #   rgb_order: RGB
-  #   pin: GPIO14
-  #   num_leds: 64
-  #   rmt_channel: 0
-  #   chipset: ws2812
-  #   color_correct: [40%, 40%, 40%]
-  #   effects: 
-  #     - addressable_scan:
-  #     - addressable_twinkle:  - platform: neopixelbus
-########## ARDUINO LED STRIP #######################
     name: "NeoPixel Light"
     id: pixel_matrix
     type: RGB
