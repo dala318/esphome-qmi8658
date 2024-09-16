@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/core/hal.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/i2c/i2c.h"
 
@@ -14,9 +15,12 @@ class QMI8658Component : public PollingComponent, public i2c::I2CDevice {
         void setup() override;
         void dump_config() override;
         void update() override;
+        void loop() override;
 
         float get_setup_priority() const override;
 
+        void set_interrupt_pin_1(GPIOPin *interrupt_pin) { interrupt_pin_1_ = interrupt_pin; }
+        void set_interrupt_pin_2(GPIOPin *interrupt_pin) { interrupt_pin_2_ = interrupt_pin; }
         void set_accel_x_sensor(sensor::Sensor *accel_x_sensor) { accel_x_sensor_ = accel_x_sensor; }
         void set_accel_y_sensor(sensor::Sensor *accel_y_sensor) { accel_y_sensor_ = accel_y_sensor; }
         void set_accel_z_sensor(sensor::Sensor *accel_z_sensor) { accel_z_sensor_ = accel_z_sensor; }
@@ -26,6 +30,8 @@ class QMI8658Component : public PollingComponent, public i2c::I2CDevice {
         void set_temperature_sensor(sensor::Sensor *temperature_sensor) { temperature_sensor_ = temperature_sensor; }
 
     protected:
+        GPIOPin *interrupt_pin_1_{nullptr};
+        GPIOPin *interrupt_pin_2_{nullptr};
         sensor::Sensor *accel_x_sensor_{nullptr};
         sensor::Sensor *accel_y_sensor_{nullptr};
         sensor::Sensor *accel_z_sensor_{nullptr};

@@ -41,6 +41,21 @@ void QMI8658Component::setup() {
         SensorQMI8658::LPF_MODE_3,        // LPF_MODE_0 (2.66% of ODR) / LPF_MODE_1 (3.63% of ODR) / LPF_MODE_2 (5.39% of ODR) / LPF_MODE_3 (13.37% of ODR)
         true);                            // selfTest enable
 
+    if (this->interrupt_pin_1_ != nullptr)  // Don't seem to work very well?
+    {
+        this->interrupt_pin_1_->setup();
+        qmi8658.enableINT(SensorQMI8658::IntPin1);
+        qmi8658.enableDataReadyINT();
+        ESP_LOGI(TAG, "Interrupt 1 enabled");
+    }
+    if (this->interrupt_pin_2_ != nullptr)
+    {
+        this->interrupt_pin_2_->setup();
+        qmi8658.enableINT(SensorQMI8658::IntPin2);
+        qmi8658.enableDataReadyINT();
+        ESP_LOGI(TAG, "Interrupt 2 enabled");
+    }
+
     // In 6DOF mode (accelerometer and gyroscope are both enabled),
     // the output data rate is derived from the nature frequency of gyroscope
     qmi8658.enableGyroscope();
@@ -57,6 +72,8 @@ void QMI8658Component::dump_config() {
         ESP_LOGE(TAG, "Communication with QMI8658 failed!");
     }
     LOG_UPDATE_INTERVAL(this);
+    LOG_PIN("  Interrupt pin 1: ", this->interrupt_pin_1_);
+    LOG_PIN("  Interrupt pin 2: ", this->interrupt_pin_2_);
     LOG_SENSOR("  ", "Acceleration X", this->accel_x_sensor_);
     LOG_SENSOR("  ", "Acceleration Y", this->accel_y_sensor_);
     LOG_SENSOR("  ", "Acceleration Z", this->accel_z_sensor_);
@@ -66,6 +83,23 @@ void QMI8658Component::dump_config() {
     LOG_SENSOR("  ", "Temperature", this->temperature_sensor_);
 }
 
+void QMI8658Component::loop() {
+    PollingComponent::loop();
+
+    if (this->interrupt_pin_1_ != nullptr)
+    {
+        bool interrupt = this->interrupt_pin_1_->digital_read();
+        if (interrupt)
+            this->update();
+    }
+    if (this->interrupt_pin_2_ != nullptr)
+    {
+        bool interrupt = this->interrupt_pin_2_->digital_read();
+        if (interrupt)
+            this->update();
+    }
+}
+
 void QMI8658Component::update() {
     // float temperature = qmi8658.getTemperature_C();
     // if (this->temperature_sensor_ != nullptr)
@@ -73,12 +107,12 @@ void QMI8658Component::update() {
 
     if (qmi8658.getDataReady()) {
         float temperature = qmi8658.getTemperature_C();
-        ESP_LOGD(TAG, ">      %lu   %.2f ℃", qmi8658.getTimestamp(), temperature);
+        // ESP_LOGD(TAG, ">      %lu   %.2f ℃", qmi8658.getTimestamp(), temperature);
         if (this->temperature_sensor_ != nullptr)
             temperature_sensor_->publish_state(temperature);
 
         if (qmi8658.getAccelerometer(accel_data.x, accel_data.y, accel_data.z)) {
-            ESP_LOGD(TAG, "ACCEL:  %f  %f  %f", accel_data.x, accel_data.y, accel_data.z);
+            // ESP_LOGD(TAG, "ACCEL:  %f  %f  %f", accel_data.x, accel_data.y, accel_data.z);
             if (this->accel_x_sensor_ != nullptr)
                 accel_x_sensor_->publish_state(accel_data.x);
             if (this->accel_y_sensor_ != nullptr)
@@ -88,7 +122,7 @@ void QMI8658Component::update() {
         }
 
         if (qmi8658.getGyroscope(gyro_data.x, gyro_data.y, gyro_data.z)) {
-            ESP_LOGD(TAG, "GYRO:  %f  %f  %f", gyro_data.x, gyro_data.y, gyro_data.z);
+            // ESP_LOGD(TAG, "GYRO:  %f  %f  %f", gyro_data.x, gyro_data.y, gyro_data.z);
             if (this->gyro_x_sensor_ != nullptr)
                 this->gyro_x_sensor_->publish_state(gyro_data.x);
             if (this->gyro_y_sensor_ != nullptr)

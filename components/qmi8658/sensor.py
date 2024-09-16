@@ -6,12 +6,14 @@ from esphome.const import (
     CONF_ACCELERATION_X,
     CONF_ACCELERATION_Y,
     CONF_ACCELERATION_Z,
-    UNIT_DEGREE_PER_SECOND,
     CONF_GYROSCOPE_X,
     CONF_GYROSCOPE_Y,
     CONF_GYROSCOPE_Z,
+    CONF_INTERRUPT_PIN,
     CONF_TEMPERATURE,
     CONF_ID,
+    UNIT_DEGREE_PER_SECOND,
+    UNIT_G,
     UNIT_METER_PER_SECOND_SQUARED,
     DEVICE_CLASS_TEMPERATURE,
     ICON_SCREEN_ROTATION,
@@ -19,6 +21,14 @@ from esphome.const import (
     STATE_CLASS_MEASUREMENT,
     UNIT_CELSIUS,
 )
+from esphome import pins
+
+CONF_INTEERUPT_GROUP = "interrupt_group"
+CONF_INTERRUPT_PIN_1 = CONF_INTERRUPT_PIN + "_1"
+CONF_INTERRUPT_PIN_2 = CONF_INTERRUPT_PIN + "_2"
+
+# CONF_ACCELERATION_RANGE = "acceleration_range"
+# CONF_ACCELERATION_ODR = "acceleration_odr"
 
 DEPENDENCIES = ["i2c"]
 
@@ -28,47 +38,55 @@ QMI8658Component = qmi8658_ns.class_(
     "QMI8658Component", cg.PollingComponent, i2c.I2CDevice
 )
 
-# QMI8658Datarate = qmi8658_ns.enum("QMI8658Datarate")
-# QMI8658Datarates = {
-#     10: QMI8658Datarate.QMI8658_DATARATE_10_HZ,
-#     50: QMI8658Datarate.QMI8658_DATARATE_50_HZ,
-#     100: QMI8658Datarate.QMI8658_DATARATE_100_HZ,
-#     200: QMI8658Datarate.QMI8658_DATARATE_200_HZ,
+# QMI8658AccRange = qmi8658_ns.enum("QMI8658AccRange")
+# QMI8658AccRanges = {
+#     0: QMI8658AccRange.ACC_RANGE_2G,
+#     1: QMI8658AccRange.ACC_RANGE_4G,
+#     2: QMI8658AccRange.ACC_RANGE_8G,
+#     3: QMI8658AccRange.ACC_RANGE_16G,
 # }
 
-# QMI8658Range = qmi8658_ns.enum("QMI8658Range")
-# QMI8658_RANGES = {
-#     200: QMI8658Range.QMI8658_RANGE_200_UT,
-#     800: QMI8658Range.QMI8658_RANGE_800_UT,
+# QMI8658AccODR = qmi8658_ns.enum("QMI8658AccOdr")
+# QMI8658AccODRs = {
+#     3: QMI8658AccODR.ACC_ODR_1000Hz,
+#     4: QMI8658AccODR.ACC_ODR_500Hz,
+#     5: QMI8658AccODR.ACC_ODR_125Hz,
+#     6: QMI8658AccODR.ACC_ODR_62_5Hz,
+#     7: QMI8658AccODR.ACC_ODR_31_25Hz,
+#     12: QMI8658AccODR.ACC_ODR_LOWPOWER_128Hz,
+#     13: QMI8658AccODR.ACC_ODR_LOWPOWER_21Hz,
+#     14: QMI8658AccODR.ACC_ODR_LOWPOWER_11Hz,
+#     15: QMI8658AccODR.ACC_ODR_LOWPOWER_3Hz,
 # }
 
-# QMI8658Oversampling = qmi8658_ns.enum("QMI8658Oversampling")
-# QMI8658Oversamplings = {
-#     512: QMI8658Oversampling.QMI8658_SAMPLING_512,
-#     256: QMI8658Oversampling.QMI8658_SAMPLING_256,
-#     128: QMI8658Oversampling.QMI8658_SAMPLING_128,
-#     64: QMI8658Oversampling.QMI8658_SAMPLING_64,
-# }
+
+# # QMI8658Datarate = qmi8658_ns.enum("QMI8658Datarate")
+# # QMI8658Datarates = {
+# #     10: QMI8658Datarate.QMI8658_DATARATE_10_HZ,
+# #     50: QMI8658Datarate.QMI8658_DATARATE_50_HZ,
+# #     100: QMI8658Datarate.QMI8658_DATARATE_100_HZ,
+# #     200: QMI8658Datarate.QMI8658_DATARATE_200_HZ,
+# # }
 
 
-# def validate_enum(enum_values, units=None, int=True):
-#     _units = []
-#     if units is not None:
-#         _units = units if isinstance(units, list) else [units]
-#         _units = [str(x) for x in _units]
-#     enum_bound = cv.enum(enum_values, int=int)
-#     def validate_enum_bound(value):
-#         value = cv.string(value)
-#         for unit in _units:
-#             if value.endswith(unit):
-#                 value = value[: -len(unit)]
-#                 break
-#         return enum_bound(value)
-#     return validate_enum_bound
+def validate_enum(enum_values, units=None, int=True):
+    _units = []
+    if units is not None:
+        _units = units if isinstance(units, list) else [units]
+        _units = [str(x) for x in _units]
+    enum_bound = cv.enum(enum_values, int=int)
+    def validate_enum_bound(value):
+        value = cv.string(value)
+        for unit in _units:
+            if value.endswith(unit):
+                value = value[: -len(unit)]
+                break
+        return enum_bound(value)
+    return validate_enum_bound
 
 
 acceleration_schema = sensor.sensor_schema(
-    unit_of_measurement=UNIT_METER_PER_SECOND_SQUARED,
+    unit_of_measurement=UNIT_G,
     icon=ICON_BRIEFCASE_DOWNLOAD,
     accuracy_decimals=1,
     state_class=STATE_CLASS_MEASUREMENT,
@@ -86,17 +104,24 @@ temperature_schema = sensor.sensor_schema(
     state_class=STATE_CLASS_MEASUREMENT,
 )
 
-CONFIG_SCHEMA = (
+
+CONFIG_SCHEMA = cv.All(
+    cv.only_with_arduino,
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(QMI8658Component),
             cv.Optional(CONF_ADDRESS): cv.i2c_address,
-            # cv.Optional(CONF_RANGE, default="200µT"): validate_enum(
-            #     QMI8658_RANGES, units=["uT", "µT"]
+            cv.Exclusive(CONF_INTERRUPT_PIN_1, CONF_INTEERUPT_GROUP): pins.gpio_input_pin_schema,
+            cv.Exclusive(CONF_INTERRUPT_PIN_2, CONF_INTEERUPT_GROUP): pins.gpio_input_pin_schema,
+            # cv.Optional(CONF_ACCELERATION_RANGE, default="4G"): validate_enum(
+            #     QMI8658AccRanges, units=["g", "G"]
             # ),
-            # cv.Optional(CONF_OVERSAMPLING, default="512x"): validate_enum(
-            #     QMI8658Oversamplings, units="x"
+            # cv.Optional(CONF_ACCELERATION_ODR, default="100Hz"): validate_enum(
+            #     QMI8658AccODRs, units=["Hz", "hz"]
             # ),
+            # # cv.Optional(CONF_RANGE, default="200µT"): validate_enum(
+            # #     QMI8658_RANGES, units=["uT", "µT"]
+            # # ),
             cv.Optional(CONF_ACCELERATION_X): acceleration_schema,
             cv.Optional(CONF_ACCELERATION_Y): acceleration_schema,
             cv.Optional(CONF_ACCELERATION_Z): acceleration_schema,
@@ -122,6 +147,14 @@ CONFIG_SCHEMA = (
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
+
+    if CONF_INTERRUPT_PIN_1 in config:
+        interrupt_pin = await cg.gpio_pin_expression(config[CONF_INTERRUPT_PIN_1])
+        cg.add(var.set_interrupt_pin_1(interrupt_pin))
+    if CONF_INTERRUPT_PIN_2 in config:
+        interrupt_pin = await cg.gpio_pin_expression(config[CONF_INTERRUPT_PIN_2])
+        cg.add(var.set_interrupt_pin_2(interrupt_pin))
+
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
 

@@ -72,6 +72,10 @@ i2c:
 sensor:
   - platform: qmi8658
     address: 0x6B
+    # interrupt_pin_1: GPIO10
+    interrupt_pin_2: GPIO13       # Warning! Activating this with debug logging may kill your prompt ;)
+    # acceleration_range: 4g
+    # acceleration_odr: 100hz
     acceleration_x:
       name: "QMI8658 Acceleration X"
     acceleration_y:
@@ -90,7 +94,7 @@ sensor:
         - offset: 34.0
     # range: 200uT
     # oversampling: 512x
-    update_interval: 1s
+    update_interval: 5s
 
 
 ########## TEXT #######################
