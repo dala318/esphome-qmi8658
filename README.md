@@ -1,4 +1,4 @@
-# esphome_qmi8658
+# esphome-qmi8658
 
 Using [SensorLib](https://github.com/lewisxhe/SensorLib) by @lewisxhe
 
