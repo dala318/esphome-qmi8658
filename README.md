@@ -1,5 +1,11 @@
 # esphome_qmi8658
 
+Using [SensorLib](https://github.com/lewisxhe/SensorLib) by @lewisxhe
+
+Add the following to your ESPHome config
+
+(Check out the attached `led8x8-qmi8658.yaml` for a more complete config using the [ESP32-S3-Matrix](https://www.waveshare.com/wiki/ESP32-S3-Matrix) )
+
 ```yaml
 external_components:
 - source:
