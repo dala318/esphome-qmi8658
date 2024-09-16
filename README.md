@@ -7,6 +7,15 @@ Add the following to your ESPHome config
 (Check out the attached `led8x8-qmi8658.yaml` for a more complete config using the [ESP32-S3-Matrix](https://www.waveshare.com/wiki/ESP32-S3-Matrix) )
 
 ```yaml
+esphome:
+  platformio_options:
+    board_build.flash_mode: dio
+  libraries:
+    - "Wire"
+    - "SPI"
+    - "SensorLib"
+
+
 external_components:
 - source:
       source: github://dala318/esphome-qmi8658
