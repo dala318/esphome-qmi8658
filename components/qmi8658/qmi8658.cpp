@@ -7,10 +7,6 @@
 #include "SensorQMI8658.hpp"                    
 #include <cmath>
 
-// TODO: How to get this from i2c bus instead of hard-coded?
-#define I2C_SDA       11
-#define I2C_SCL       12
-
 namespace esphome {
 namespace qmi8658 {
 
@@ -23,7 +19,7 @@ void QMI8658Component::setup() {
  
     // Wire.begin(I2C_SDA, I2C_SCL);
     // if (!qmi8658.begin(Wire, QMI8658_L_SLAVE_ADDRESS)) {
-    if (!qmi8658.begin(Wire, QMI8658_L_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!qmi8658.begin(Wire, QMI8658_L_SLAVE_ADDRESS, this->sda_pin_, this->scl_pin_)) {
         ESP_LOGE(TAG, "Failed to find QMI8658 - check your wiring!");
     }
     ESP_LOGI(TAG, "Device ID: %x",qmi8658.getChipID());

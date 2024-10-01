@@ -12,6 +12,8 @@ from esphome.const import (
     CONF_INTERRUPT_PIN,
     CONF_TEMPERATURE,
     CONF_ID,
+    CONF_SDA,
+    CONF_SCL,
     UNIT_DEGREE_PER_SECOND,
     UNIT_G,
     DEVICE_CLASS_TEMPERATURE,
@@ -185,6 +187,9 @@ async def to_code(config):
 
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
+
+    cg.add(var.set_sda_pin(config[CONF_SDA]))
+    cg.add(var.set_scl_pin(config[CONF_SCL]))
 
     cg.add(var.set_accel_range(QMI8658AccelRanges[config[CONF_ACCELERATION_RANGE]]))
     cg.add(var.set_accel_odr(QMI8658AccelODRs[config[CONF_ACCELERATION_ODR]]))

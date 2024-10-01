@@ -19,6 +19,9 @@ class QMI8658Component : public PollingComponent, public i2c::I2CDevice {
 
         float get_setup_priority() const override;
 
+        void set_sda_pin(uint8_t sda_pin) { sda_pin_ = sda_pin; }
+        void set_scl_pin(uint8_t scl_pin) { scl_pin_ = scl_pin; }
+
         void set_accel_range(SensorQMI8658::AccelRange accel_range) { accel_range_ = accel_range; }
         void set_accel_odr(SensorQMI8658::AccelODR accel_odr) { accel_odr_ = accel_odr; }
         void set_accel_lpf_mode(SensorQMI8658::LpfMode accel_lpf_mode) { accel_lpf_mode_ = accel_lpf_mode; }
@@ -38,6 +41,9 @@ class QMI8658Component : public PollingComponent, public i2c::I2CDevice {
         void set_temperature_sensor(sensor::Sensor *temperature_sensor) { temperature_sensor_ = temperature_sensor; }
 
     protected:
+        uint8_t sda_pin_;
+        uint8_t scl_pin_;
+
         SensorQMI8658::AccelRange accel_range_;
         SensorQMI8658::AccelODR accel_odr_;
         SensorQMI8658::LpfMode accel_lpf_mode_;
